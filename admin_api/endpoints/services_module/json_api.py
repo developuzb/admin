@@ -1,35 +1,56 @@
-# admin_api/endpoints/services_module/json_api.py
-
 from fastapi import APIRouter, Depends
 from db.models import get_db
 import sqlite3
 
 router = APIRouter()
 
-# faqat .py faylga yoziladi
-NGROK_BASE = "https://38ede9b87b92.ngrok-free.app"
-
-
 @router.get("/api/services/")
 def get_services_json(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute(
-        "SELECT id, name, duration, cashback, image_url FROM services")
+
+    cursor.execute("""
+        SELECT 
+            name,
+            description,
+            price,
+            original_price,
+            pre_discount_price,
+            cashback,
+            orders,
+            is_active,
+            image_url
+        FROM services
+    """)
     rows = cursor.fetchall()
 
     services = []
     for row in rows:
-        image_url = row[4] or ""
+        (
+            name,
+            description,
+            price,
+            original_price,
+            pre_discount_price,
+            cashback,
+            orders,
+            is_active,
+            image_filename
+        ) = row
 
-        if image_url and not image_url.startswith("http"):
-            image_url = f"{NGROK_BASE}/static/{image_url.lstrip('/')}"
+        cashback_sum = int((price or 0) * (cashback or 0) / 100)
+        foyda = (original_price or 0 - price or 0) + cashback_sum
 
         services.append({
-            "id": row[0],
-            "name": row[1],
-            "duration": row[2],
-            "cashback": row[3],
-            "image_url": image_url,
+            "xizmat_nomi": name,
+            "tavsifi": description,
+            "narx": price,
+            "asl_narx": original_price,
+            "chegirma_oldi_narx": pre_discount_price,
+            "cashback": cashback,
+            "buyurtmalar": orders,
+            "foyda": foyda,
+            "holati": "aktiv" if is_active else "passiv",
+            "image": image_filename or "no-image.png"  # 🔥 frontend talabiga mos
         })
 
     return services
