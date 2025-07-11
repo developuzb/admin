@@ -56,7 +56,6 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-telegram-bot==20.6
 pytz==2025.2
-pywin32==310
 pyzmq==27.0.0
 qrcode==8.2
 referencing==0.36.2
