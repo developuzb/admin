@@ -1,0 +1,45 @@
+
+(venv) C:\Users\suxrob\Desktop\SQlite2\SQlite2\SQlite2>heroku logs --tail --app admin-panel
+2025-07-11T11:34:43.462682+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=c5554a9f-043d-4b09-c734-d60e70a0ef29 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T11:34:44.336238+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=f479a163-a5f6-7612-5cb8-f98621a5abe1 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T11:35:11.727239+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=edf54d25-32ed-c916-e4ee-217293e45b08 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T11:35:12.028537+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=71b5cc9d-3210-47e9-cef8-80cf908fe935 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T12:41:47.548184+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=3b061bef-7d54-a9c6-f7b3-d289b3be729b fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T12:41:47.938700+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=3f188580-578a-7eca-dd14-785c6a971af4 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T12:56:49.799003+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=d7c022e3-505c-0125-eb4d-c11b75451c4f fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T12:56:50.259849+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=77266c79-ba5a-70d5-e1b6-2c5a25eeb325 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T12:57:42.768802+00:00 heroku[web.1]: Starting process with command `uvicorn admin_api.main:app --host=0.0.0.0 --port=${PORT}`
+2025-07-11T12:57:43.262914+00:00 app[web.1]: Python buildpack: Detected 512 MB available memory and 8 CPU cores.
+2025-07-11T12:57:43.263062+00:00 app[web.1]: Python buildpack: Defaulting WEB_CONCURRENCY to 2 based on the available memory.
+2025-07-11T12:57:43.278288+00:00 app[web.1]: /bin/bash: line 1: uvicorn: command not found
+2025-07-11T12:57:43.336193+00:00 heroku[web.1]: Process exited with status 127
+2025-07-11T12:57:43.355932+00:00 heroku[web.1]: State changed from starting to crashed
+2025-07-11T12:57:43.359783+00:00 heroku[web.1]: State changed from crashed to starting
+2025-07-11T12:57:45.821978+00:00 heroku[web.1]: Starting process with command `uvicorn admin_api.main:app --host=0.0.0.0 --port=${PORT}`
+2025-07-11T12:57:46.358643+00:00 app[web.1]: Python buildpack: Detected 512 MB available memory and 8 CPU cores.
+2025-07-11T12:57:46.358680+00:00 app[web.1]: Python buildpack: Defaulting WEB_CONCURRENCY to 2 based on the available memory.
+2025-07-11T12:57:46.374601+00:00 app[web.1]: /bin/bash: line 1: uvicorn: command not found
+2025-07-11T12:57:46.419263+00:00 heroku[web.1]: Process exited with status 127
+2025-07-11T12:57:46.440480+00:00 heroku[web.1]: State changed from starting to crashed
+2025-07-11T13:00:02.530190+00:00 heroku[router]: at=error code=H10 desc="App crashed" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=f4cf2e44-615b-5e27-baef-173d82f8339b fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:00:23.907034+00:00 heroku[web.1]: State changed from crashed to down
+2025-07-11T13:00:46.208382+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=42d51471-8eb3-a76f-7d8a-a6f5536f7f39 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:00:46.476042+00:00 heroku[router]: sock=client at=warning code=H27 desc="Client Request Interrupted" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=02ca54e6-704e-a2ba-f596-ef7f9ae1357c fwd="" dyno= connect=0ms service=0ms status=499 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:00:46.581216+00:00 heroku[router]: at=error code=H14 desc="No web processes running" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=d21e3c35-c230-4770-dffb-7a489107bc43 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:00:53.624819+00:00 heroku[web.1]: Starting process with command `uvicorn admin_api.main:app --host=0.0.0.0 --port=${PORT}`
+2025-07-11T13:00:54.124585+00:00 app[web.1]: Python buildpack: Detected 512 MB available memory and 8 CPU cores.
+2025-07-11T13:00:54.124676+00:00 app[web.1]: Python buildpack: Defaulting WEB_CONCURRENCY to 2 based on the available memory.
+2025-07-11T13:00:54.140072+00:00 app[web.1]: /bin/bash: line 1: uvicorn: command not found
+2025-07-11T13:00:54.179657+00:00 heroku[web.1]: Process exited with status 127
+2025-07-11T13:00:54.201604+00:00 heroku[web.1]: State changed from starting to crashed
+2025-07-11T13:00:54.205024+00:00 heroku[web.1]: State changed from crashed to starting
+2025-07-11T13:00:57.336915+00:00 heroku[web.1]: Starting process with command `uvicorn admin_api.main:app --host=0.0.0.0 --port=${PORT}`
+2025-07-11T13:00:57.844213+00:00 app[web.1]: Python buildpack: Detected 512 MB available memory and 8 CPU cores.
+2025-07-11T13:00:57.844362+00:00 app[web.1]: Python buildpack: Defaulting WEB_CONCURRENCY to 2 based on the available memory.
+2025-07-11T13:00:57.860871+00:00 app[web.1]: /bin/bash: line 1: uvicorn: command not found
+2025-07-11T13:00:57.903778+00:00 heroku[web.1]: Process exited with status 127
+2025-07-11T13:00:57.923456+00:00 heroku[web.1]: State changed from starting to crashed
+2025-07-11T13:02:12.537829+00:00 heroku[router]: at=error code=H10 desc="App crashed" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=d672ca8d-6c79-9178-52bb-b90f0b1497bb fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:03:27.909776+00:00 heroku[router]: at=error code=H10 desc="App crashed" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=2855fc86-db0a-8e3c-7df2-052a6d8413ae fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:03:40.708910+00:00 heroku[router]: at=error code=H10 desc="App crashed" method=GET path="/" host=admin-panel-3cc1cb571383.herokuapp.com request_id=2fd27699-cacc-661f-a21d-76041010699b fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
+2025-07-11T13:04:56.035666+00:00 heroku[router]: at=error code=H10 desc="App crashed" method=GET path="/favicon.ico" host=admin-panel-3cc1cb571383.herokuapp.com request_id=5a2e1557-c164-d292-e170-c7d8cdefc488 fwd="" dyno= connect=0ms service=0ms status=503 bytes=567 protocol=http1.1 tls=true tls_version=unknown
