@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Xizmatlar{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-800">📋 Xizmatlar ro‘yxati</h2>
+  <a href="/admin/services/add"
+    class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition">
+    ➕ Yangi xizmat
+  </a>
+</div>
+
+<!-- Kartochkalar konteyneri -->
+<div id="serviceCards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+  <!-- JavaScript orqali to‘ldiriladi -->
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/admin/services/json")
+      .then(response => response.json())
+      .then(services => {
+        const container = document.getElementById("serviceCards");
+        container.innerHTML = "";
+
+        services.forEach(s => {
+          const imageUrl = s.image ? `/static/images/${s.image}` : `/static/images/no-image.png`;
+          const profitColor = s.total_profit > 0 ? "text-green-600" : "text-red-600";
+          const statusBadge = s.active
+            ? `<span class="px-2 py-1 text-green-800 bg-green-100 rounded-full text-xs font-semibold">🟢 Faol</span>`
+            : `<span class="px-2 py-1 text-red-800 bg-red-100 rounded-full text-xs font-semibold">🔴 Passiv</span>`;
+
+          const card = `
+            <div class="bg-white rounded-xl shadow p-4 flex flex-col justify-between h-full">
+              <img src="${imageUrl}" alt="${s.name}" class="w-full h-40 object-cover rounded-lg mb-3" />
+              <div class="flex-1">
+                <h3 class="text-lg font-bold mb-1">${s.name}</h3>
+                <p class="text-sm text-gray-600 mb-2">${s.description || 'Tavsif mavjud emas'}</p>
+                <div class="text-sm space-y-1">
+                  <p><strong>Narx:</strong> ${s.price} so‘m</p>
+                  <p><strong>Asl narx:</strong> ${s.cost_price} so‘m</p>
+                  <p><strong>Chegirma oldi narx:</strong> ${s.original_price} so‘m</p>
+                  <p><strong>Cashback:</strong> ${s.cashback}%</p>
+                  <p><strong>Buyurtmalar:</strong> ${s.order_count} ta</p>
+                  <p><strong>Foyda:</strong> <span class="${profitColor} font-semibold">${s.total_profit} so‘m</span></p>
+                  <p><strong>Holati:</strong> ${statusBadge}</p>
+                </div>
+              </div>
+              <div class="mt-3 text-right">
+                <a href="/admin/services/edit/${s.id}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">✏️ Tahrirlash</a>
+              </div>
+            </div>
+        `;
+          container.insertAdjacentHTML("beforeend", card);
+        });
+      })
+      .catch(error => {
+        console.error("Xizmatlar yuklanmadi:", error);
+      });
+  });
+</script>
+{% endblock %}

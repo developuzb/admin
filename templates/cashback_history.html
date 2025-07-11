@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="px-6 py-4">
+    <h2 class="text-xl font-semibold mb-4">📜 {{ user.name }} — Cashback tarixi</h2>
+
+    <table class="table-auto w-full bg-white rounded shadow border border-gray-200 text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-3 py-2 text-left">Sana</th>
+                <th class="px-3 py-2 text-left">Yo‘nalish</th>
+                <th class="px-3 py-2 text-left">Miqdor</th>
+                <th class="px-3 py-2 text-left">Izoh</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in history %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2">{{ row["timestamp"] }}</td>
+                <td class="px-3 py-2">
+                    {% if row["direction"] == "in" %}
+                    <span class="text-green-600">➕ Qo‘shildi</span>
+                    {% else %}
+                    <span class="text-red-600">➖ Ayirildi</span>
+                    {% endif %}
+                </td>
+                <td class="px-3 py-2 font-medium">{{ row["amount"] }} so‘m</td>
+                <td class="px-3 py-2 text-gray-700">{{ row["note"] or "-" }}</td>
+            </tr>
+            {% endfor %}
+            {% if not history %}
+            <tr>
+                <td colspan="4" class="text-center py-6 text-gray-400">Tarix mavjud emas</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="mt-6">
+        <a href="/admin/cashback" class="text-blue-600 hover:underline">⬅️ Orqaga</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold mb-6">🧪 A/B Test Natijalari</h2>
+
+<form method="get" class="mb-6 flex flex-col md:flex-row items-start md:items-end gap-4">
+    <div>
+        <label class="block mb-1 text-sm">Boshlanish sanasi:</label>
+        <input type="date" name="from" value="{{ request.query_params.get('from', '') }}"
+            class="border px-3 py-2 rounded w-full">
+    </div>
+    <div>
+        <label class="block mb-1 text-sm">Tugash sanasi:</label>
+        <input type="date" name="to" value="{{ request.query_params.get('to', '') }}"
+            class="border px-3 py-2 rounded w-full">
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-6">📊 Ko‘rsatish</button>
+</form>
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Guruh A -->
+    <div class="bg-white shadow rounded p-6">
+        <h3 class="text-xl font-medium mb-2">🅰️ Guruh A</h3>
+        <p><strong>Foydalanuvchilar soni:</strong> {{ group_a_users }}</p>
+        <p><strong>Buyurtmalar soni:</strong> {{ group_a_orders }}</p>
+        <p><strong>Konversiya:</strong>
+            {% if group_a_users %}
+            {{ (group_a_orders / group_a_users * 100) | round(2) }}%
+            {% else %}
+            0%
+            {% endif %}
+        </p>
+    </div>
+
+
+    <!-- Guruh B -->
+    <div class="bg-white shadow rounded p-6">
+        <h3 class="text-xl font-medium mb-2">🅱️ Guruh B</h3>
+        <p><strong>Foydalanuvchilar soni:</strong> {{ group_b_users }}</p>
+        <p><strong>Buyurtmalar soni:</strong> {{ group_b_orders }}</p>
+        <p><strong>Konversiya:</strong>
+            {% if group_b_users %}
+            {{ (group_b_orders / group_b_users * 100) | round(2) }}%
+            {% else %}
+            0%
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Umumiy tahlil -->
+<div class="mt-8 bg-gray-50 border rounded p-6">
+    <h4 class="text-lg font-semibold mb-2">📊 Tahlil</h4>
+    {% if group_a_orders > group_b_orders %}
+    <p>✅ <strong>Guruh A</strong> ko‘proq buyurtma berdi.</p>
+    {% elif group_b_orders > group_a_orders %}
+    <p>✅ <strong>Guruh B</strong> ko‘proq buyurtma berdi.</p>
+    {% else %}
+    <p>⚖️ Har ikkala guruhda ham teng natija.</p>
+    {% endif %}
+</div>
+
+
+</div> <!-- bu guruhlar statistikasi tugagan blok -->
+
+<canvas id="chart" class="mt-8"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Guruh A', 'Guruh B'],
+            datasets: [{
+                label: 'Buyurtmalar soni',
+                data: [{{ group_a_orders }}, {{ group_b_orders }}],
+        backgroundColor: ['#3b82f6', '#10b981']
+    }]
+    },
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+  });
+</script>
+
+
+{% endblock %}

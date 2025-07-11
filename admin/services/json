@@ -1,0 +1,23 @@
+from fastapi.responses import JSONResponse
+from db.queries import get_services_with_stats  # 🔁 oldin yozgan funksiya
+
+
+@router.get("/admin/services/json")
+def get_services_json():
+    services = db.get_services()
+    return [
+        {
+            "id": s.id,
+            "name": s.name,
+            "price": s.price,
+            "cost_price": s.cost_price,
+            "active": s.active,
+            "order_count": s.order_count,
+            "total_profit": s.total_profit,
+            "image": s.image or None,  # 🔥 MUHIM QATOR – SHART!
+            "description": s.description or "",
+            "original_price": s.original_price or 0,
+            "cashback": s.cashback or 0
+        }
+        for s in services
+    ]

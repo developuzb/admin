@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold mb-6">💰 Cashback monitoringi</h2>
+
+<!-- Stat cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-blue-100 text-blue-800 p-4 rounded-lg shadow">
+        <p class="text-sm">Umumiy cashback</p>
+        <p class="text-2xl font-bold" id="totalCashback">+0 so‘m</p>
+    </div>
+    <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow">
+        <p class="text-sm">Bugungi kirim</p>
+        <p class="text-2xl font-bold" id="todayIn">+0 so‘m</p>
+    </div>
+    <div class="bg-red-100 text-red-800 p-4 rounded-lg shadow">
+        <p class="text-sm">Bugungi chiqim</p>
+        <p class="text-2xl font-bold" id="todayOut">–0 so‘m</p>
+    </div>
+</div>
+
+<!-- Foydalanuvchilar jadvali -->
+<table class="table-auto w-full bg-white rounded shadow overflow-hidden border border-gray-200">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="px-4 py-2 border">Ism</th>
+            <th class="px-4 py-2 border">Telefon</th>
+            <th class="px-4 py-2 border">Balans</th>
+            <th class="px-4 py-2 border">Amallar soni</th>
+            <th class="px-4 py-2 border">Boshqaruv</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border">{{ user.name }}</td>
+            <td class="px-4 py-2 border">{{ user.phone }}</td>
+            <td class="px-4 py-2 border text-green-600 font-medium">{{ user.cashback_balance }} so'm</td>
+            <td class="px-4 py-2 border">{{ user.operations }}</td>
+            <td class="px-4 py-2 border space-x-2 text-center">
+                <button onclick="openForm({{ user.id }}, '{{ user.name }}')"
+                    class="text-green-600 hover:underline text-sm">➕ Qo‘shish</button>
+                <button onclick="openForm({{ user.id }}, '{{ user.name }}', true)"
+                    class="text-red-600 hover:underline text-sm">➖ Ayirish</button>
+                <button onclick="openHistory({{ user.id }})" class="text-blue-600 hover:underline text-sm">📄
+                    Tarix</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal form -->
+<div id="cashbackModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+        <h3 class="text-lg font-semibold mb-4" id="modalTitle">Cashback qo‘shish</h3>
+        <form id="cashbackForm">
+            <input type="hidden" name="user_id" id="userId">
+            <input type="hidden" name="direction" id="direction">
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Foydalanuvchi</label>
+                <p id="userName" class="text-gray-800 font-semibold"></p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Miqdor (so‘m)</label>
+                <input type="number" name="amount" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Izoh (ixtiyoriy)</label>
+                <textarea name="note" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Bekor</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Tasdiqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+    fetch("/admin/cashback/stats")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("totalCashback").textContent = "+" + data.total.toLocaleString("uz-UZ") + " so‘m";
+            document.getElementById("todayIn").textContent = "+" + data.today_in.toLocaleString("uz-UZ") + " so‘m";
+            document.getElementById("todayOut").textContent = "–" + data.today_out.toLocaleString("uz-UZ") + " so‘m";
+        });
+
+    function openForm(userId, name, isOut = false) {
+        document.getElementById("cashbackModal").classList.remove("hidden");
+        document.getElementById("userId").value = userId;
+        document.getElementById("userName").textContent = name;
+        document.getElementById("direction").value = isOut ? "out" : "in";
+        document.getElementById("modalTitle").textContent = isOut ? "Cashback ayirish" : "Cashback qo‘shish";
+    }
+
+    function closeModal() {
+        document.getElementById("cashbackModal").classList.add("hidden");
+        document.getElementById("cashbackForm").reset();
+    }
+
+    document.getElementById("cashbackForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        fetch("/admin/cashback/adjust", {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("✅ Amal bajarildi");
+                location.reload();
+            });
+    });
+
+    function openHistory(userId) {
+        window.location.href = `/admin/cashback/history/${userId}`;
+    }
+</script>
+{% endblock %}
