@@ -77,3 +77,4 @@ yarg==0.1.9
 yarl==1.20.1
 python-multipart 
 uvicorn 
+fastapi 
