@@ -1,0 +1,41 @@
+aiogram==3.3.0
+
+
+
+
+
+project/
+├── bot.py
+├── config.py
+├── handlers/
+│   ├── users.py           ← Buyurtma oqimi
+│   ├── admin.py           ← Hisobotlar, statistikalar 
+│   ├── operator.py        ← Tasdiqlash/bekor qilish
+│   └── payments.py        ← To‘lovlar
+├── services/
+│   ├── users.py           ← Foydalanuvchi info
+│   ├── order_counter.py   ← Buyurtma raqam
+│   ├── metrics.py         ← Segment/sodiqlik
+│   ├── cashback.py        ← Balans
+│   ├── notifications.py   ← Guruhga yuborish
+│   └── payments.py        ← To‘lov ishlovi
+├── templates/             ← HTML javoblar (agar kerak)
+├── users.json
+├── metrics.json
+├── order_counter.json
+├── cashback.json
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

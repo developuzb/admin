@@ -1,0 +1,8 @@
+<label class="block text-sm font-medium">Asl narx (cost_price):</label>
+<input type="number" name="cost_price" class="border p-2 rounded w-full mb-4" required>
+
+<label class="block text-sm font-medium">Chegirma oldi narx (original_price):</label>
+<input type="number" name="original_price" class="border p-2 rounded w-full mb-4" required>
+
+<label class="block text-sm font-medium">Cashback (%):</label>
+<input type="number" name="cashback" min="0" max="100" class="border p-2 rounded w-full mb-4" required>

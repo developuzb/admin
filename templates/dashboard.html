@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Kengaytirilgan Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="p-6 space-y-8">
+
+    <!-- Statistic Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white shadow rounded-xl p-4">
+            <p class="text-gray-500 text-sm">Bugungi buyurtmalar</p>
+            <p class="text-2xl font-bold text-blue-600" id="todayOrders">...</p>
+        </div>
+        <div class="bg-white shadow rounded-xl p-4">
+            <p class="text-gray-500 text-sm">Bugungi foyda</p>
+            <p class="text-2xl font-bold text-green-600" id="todayProfit">...</p>
+        </div>
+        <div class="bg-white shadow rounded-xl p-4">
+            <p class="text-gray-500 text-sm">Yangi xizmatlar</p>
+            <p class="text-2xl font-bold text-purple-600" id="newServices">...</p>
+        </div>
+        <div class="bg-white shadow rounded-xl p-4">
+            <p class="text-gray-500 text-sm">Sodiq mijozlar</p>
+            <p class="text-2xl font-bold text-yellow-600" id="loyalClients">...</p>
+        </div>
+    </div>
+
+    <!-- Trend Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white shadow rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">7 kunlik buyurtmalar trendlari</h3>
+            <canvas id="ordersChart" height="100"></canvas>
+        </div>
+        <div class="bg-white shadow rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">7 kunlik foyda trendlari</h3>
+            <canvas id="profitChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Xizmatlar -->
+    <div class="bg-white shadow rounded-xl p-6">
+        <h3 class="text-lg font-bold mb-4">🏆 Top 5 xizmatlar</h3>
+        <table class="w-full text-sm text-left text-gray-700">
+            <thead class="text-xs text-gray-500 uppercase border-b">
+                <tr>
+                    <th class="py-2 px-4">Xizmat</th>
+                    <th class="py-2 px-4">Buyurtmalar</th>
+                    <th class="py-2 px-4">Foyda</th>
+                </tr>
+            </thead>
+            <tbody id="topServicesBody">
+                <!-- Real ma'lumotlar JS orqali to‘ldiriladi -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Chart.js script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    const profitCtx = document.getElementById('profitChart').getContext('2d');
+
+    const ordersChart = new Chart(ordersCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Buyurtmalar',
+                data: [],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    const profitChart = new Chart(profitCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Foyda',
+                data: [],
+                borderColor: 'rgba(34, 197, 94, 1)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // API orqali real ma'lumotlarni yuklash
+    fetch("/admin/dashboard/data")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("todayOrders").textContent = data.today_orders + " ta";
+            document.getElementById("todayProfit").textContent = data.today_profit + " so‘m";
+            document.getElementById("newServices").textContent = data.new_services + " ta";
+            document.getElementById("loyalClients").textContent = data.loyal_clients + " ta";
+
+            ordersChart.data.labels = data.trend_labels;
+            ordersChart.data.datasets[0].data = data.orders_data;
+            ordersChart.update();
+
+            profitChart.data.labels = data.trend_labels;
+            profitChart.data.datasets[0].data = data.profit_data;
+            profitChart.update();
+
+            const tbody = document.getElementById("topServicesBody");
+            tbody.innerHTML = "";
+            data.top_services.forEach(row => {
+                tbody.innerHTML += `
+          <tr class="border-b">
+            <td class="py-2 px-4">${row.name}</td>
+            <td class="py-2 px-4">${row.order_count} ta</td>
+            <td class="py-2 px-4 text-green-600 font-semibold">${row.profit} so‘m</td>
+          </tr>`;
+            });
+        });
+</script>
+{% endblock %}
