@@ -1,22 +1,17 @@
 import sqlite3
 
-conn = sqlite3.connect("bot.db")
-cursor = conn.cursor()
 
-# Eski jadvalni o‘chirib tashlaymiz
-cursor.execute("DROP TABLE IF EXISTS orders")
-
-# Yangi to‘liq formatda qayta yaratamiz
-cursor.execute("""
-CREATE TABLE orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    service_id INTEGER,
-    contact TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-""")
-
-conn.commit()
-conn.close()
-print("✅ orders jadvali yangilandi.")
+def add_used_cashback_column():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "ALTER TABLE orders ADD COLUMN used_cashback INTEGER DEFAULT 0")
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e):
+            pass  # Ustun allaqachon mavjud
+        else:
+            raise
+    finally:
+        conn.close()
