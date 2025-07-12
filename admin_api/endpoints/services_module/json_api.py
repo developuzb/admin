@@ -45,16 +45,26 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     services = [dict(row) for row in rows]
     return services
 
-
-@router.get("/api/services/{service_id}")
 def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM services WHERE id = ?", (service_id,))
-    row = cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Xizmat topilmadi")
-    return dict(row)
 
+    # Xizmat ma’lumotlari
+    cursor.execute("SELECT * FROM services WHERE id = ?", (service_id,))
+    service = cursor.fetchone()
+    if not service:
+        raise HTTPException(status_code=404, detail="Xizmat topilmadi")
+
+    service_data = dict(service)
+
+    # So‘nggi buyurtma (agar mavjud bo‘lsa)
+    cursor.execute(
+        "SELECT id, user_id, contact, created_at FROM orders WHERE service_id = ? ORDER BY id DESC LIMIT 1",
+        (service_id,)
+    )
+    last_order = cursor.fetchone()
+    service_data["last_order"] = dict(last_order) if last_order else None
+
+    return service_data
 
 @router.patch("/api/services/{service_id}/stats")
 def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
