@@ -46,6 +46,7 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     return services
 
 
+@router.get("/api/services/{service_id}")
 def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
