@@ -103,8 +103,7 @@ def track_user(user: UserTrack, db: sqlite3.Connection = Depends(get_db)):
     return {"status": "ok"}
 
 
-@router.get("/ api/users/{user_id}
-            ")
+@router.get("/ api/users/{user_id}")
 def get_user_profile(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute(
