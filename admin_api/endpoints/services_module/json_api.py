@@ -45,6 +45,7 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     services = [dict(row) for row in rows]
     return services
 
+
 def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -65,6 +66,7 @@ def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db))
     service_data["last_order"] = dict(last_order) if last_order else None
 
     return service_data
+
 
 @router.patch("/api/services/{service_id}/stats")
 def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
@@ -101,7 +103,8 @@ def track_user(user: UserTrack, db: sqlite3.Connection = Depends(get_db)):
     return {"status": "ok"}
 
 
-@router.get("/api/users/{user_id}/profile")
+@router.get("/ api/users/{user_id}
+            ")
 def get_user_profile(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute(
