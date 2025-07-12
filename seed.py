@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect("bot.db")  # yoki kerakli to‘liq yo‘l
+conn = sqlite3.connect("bot.db")  # kerakli to‘liq yo‘lni yozing
 cursor = conn.cursor()
 
 cursor.execute("""
@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS orders (
 
 conn.commit()
 conn.close()
+
+print("✅ orders jadvali yaratildi.")
