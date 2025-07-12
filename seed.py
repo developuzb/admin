@@ -1,10 +1,14 @@
 import sqlite3
 
-conn = sqlite3.connect("bot.db")  # kerakli to‘liq yo‘lni yozing
+conn = sqlite3.connect("bot.db")
 cursor = conn.cursor()
 
+# Eski jadvalni o‘chirib tashlaymiz
+cursor.execute("DROP TABLE IF EXISTS orders")
+
+# Yangi to‘liq formatda qayta yaratamiz
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     service_id INTEGER,
@@ -15,5 +19,4 @@ CREATE TABLE IF NOT EXISTS orders (
 
 conn.commit()
 conn.close()
-
-print("✅ orders jadvali yaratildi.")
+print("✅ orders jadvali yangilandi.")
