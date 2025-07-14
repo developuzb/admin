@@ -69,6 +69,7 @@ def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db))
     return service_data
 
 
+
 @router.patch("/api/services/{service_id}/stats")
 def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -87,6 +88,17 @@ def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.C
     """, (foyda, service_id))
     db.commit()
     return {"status": "success", "foyda": foyda}
+
+class MetricLog(BaseModel):
+    event: str
+    date: str
+    group: str | None = None
+
+@router.post("/api/metrics/")
+def log_metric(metric: MetricLog):
+    # Bu yerda faqat xotirada saqlaymiz yoki logga yozamiz
+    print(f"📊 METRIKA: {metric.event} ({metric.date})", "group:", metric.group)
+    return {"status": "ok"}
 
 
 @router.post("/api/users/track")
