@@ -117,6 +117,28 @@ def track_user(data: TrackUserSchema, db: sqlite3.Connection = Depends(get_db)):
     return {"status": "tracked"}
 
 
+class OrderCreateSchema(BaseModel):
+    order_id: int
+    service_id: int
+    service_name: str
+    user_id: int
+    phone: str
+    contact_method: str
+    contact_time: str
+    name: str
+
+
+@router.post("/api/orders/")
+def create_order(data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO orders (id, service_id, service_name, user_id, phone, contact_method, contact_time, name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (data.order_id, data.service_id, data.service_name, data.user_id, data.phone, data.contact_method, data.contact_time, data.name))
+    db.commit()
+    return {"status": "order_created"}
+
+
 @router.get("/ api/users/{user_id}")
 def get_user_profile(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
