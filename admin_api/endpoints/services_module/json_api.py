@@ -69,7 +69,6 @@ def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db))
     return service_data
 
 
-
 @router.patch("/api/services/{service_id}/stats")
 def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -89,10 +88,12 @@ def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.C
     db.commit()
     return {"status": "success", "foyda": foyda}
 
+
 class MetricLog(BaseModel):
     event: str
     date: str
     group: str | None = None
+
 
 @router.post("/api/metrics/")
 def log_metric(metric: MetricLog):
@@ -183,3 +184,28 @@ def send_report(report: WebhookReport):
 
 
 app.include_router(router)
+
+
+class ServicePartialUpdate(BaseModel):
+    last_order: int | None = None
+
+
+@router.patch("/api/services/{service_id}")
+def update_service_partial(service_id: int, data: ServicePartialUpdate, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    fields = []
+    values = []
+
+    if data.last_order is not None:
+        fields.append("last_order = ?")
+        values.append(data.last_order)
+
+    if not fields:
+        raise HTTPException(
+            status_code=400, detail="Hech narsa o‘zgartirilmadi")
+
+    values.append(service_id)
+    sql = f"UPDATE services SET {', '.join(fields)} WHERE id = ?"
+    cursor.execute(sql, values)
+    db.commit()
+    return {"status": "updated"}
