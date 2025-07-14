@@ -1,22 +1,25 @@
 import sqlite3
 
-db = sqlite3.connect("bot.db")
-cursor = db.cursor()
 
-# 🆕 balance ustuni
-try:
-    cursor.execute("ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0;")
-    print("✅ 'balance' ustuni qo‘shildi.")
-except Exception as e:
-    print(f"⚠️ balance ustuni mavjud yoki xatolik: {e}")
+def add_service_name_column():
+    conn = sqlite3.connect("bot.db")
+    cursor = conn.cursor()
 
-# 🆕 actions_count ustuni
-try:
-    cursor.execute(
-        "ALTER TABLE users ADD COLUMN actions_count INTEGER DEFAULT 0;")
-    print("✅ 'actions_count' ustuni qo‘shildi.")
-except Exception as e:
-    print(f"⚠️ actions_count ustuni mavjud yoki xatolik: {e}")
+    try:
+        # Ustun mavjudligini tekshirish (mavjud bo‘lsa, qo‘shmaslik uchun)
+        cursor.execute("PRAGMA table_info(orders);")
+        columns = [col[1] for col in cursor.fetchall()]
+        if "service_name" not in columns:
+            cursor.execute("ALTER TABLE orders ADD COLUMN service_name TEXT;")
+            print("✅ 'service_name' ustuni qo‘shildi.")
+        else:
+            print("ℹ️ 'service_name' ustuni allaqachon mavjud.")
+    except Exception as e:
+        print(f"❌ Xatolik: {e}")
+    finally:
+        conn.commit()
+        conn.close()
 
-db.commit()
-db.close()
+
+if __name__ == "__main__":
+    add_service_name_column()
