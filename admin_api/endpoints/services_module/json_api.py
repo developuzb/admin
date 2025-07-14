@@ -227,3 +227,41 @@ def ensure_last_order_column_exists():
 
 # ⏳ Dastur ishga tushganda chaqiriladi
 ensure_last_order_column_exists()
+
+
+class UserUpdate(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    balance: int | None = None
+    actions_count: int | None = None
+
+
+@router.put("/api/users/{user_id}")
+def update_user(user_id: int, update: UserUpdate, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    fields = []
+    values = []
+
+    if update.name is not None:
+        fields.append("name = ?")
+        values.append(update.name)
+    if update.phone is not None:
+        fields.append("phone = ?")
+        values.append(update.phone)
+    if update.balance is not None:
+        fields.append("balance = ?")
+        values.append(update.balance)
+    if update.actions_count is not None:
+        fields.append("actions_count = ?")
+        values.append(update.actions_count)
+
+    if not fields:
+        raise HTTPException(
+            status_code=400, detail="Yangilanish uchun ma'lumot yo‘q")
+
+    values.append(user_id)
+    sql = f"UPDATE users SET {', '.join(fields)} WHERE id = ?"
+    cursor.execute(sql, values)
+    db.commit()
+    return {"status": "updated"}
