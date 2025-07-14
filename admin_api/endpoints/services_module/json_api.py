@@ -209,3 +209,21 @@ def update_service_partial(service_id: int, data: ServicePartialUpdate, db: sqli
     cursor.execute(sql, values)
     db.commit()
     return {"status": "updated"}
+
+
+def ensure_last_order_column_exists():
+    db = sqlite3.connect("bot.db")
+    cursor = db.cursor()
+    cursor.execute("PRAGMA table_info(services);")
+    columns = [row[1] for row in cursor.fetchall()]
+    if "last_order" not in columns:
+        cursor.execute("ALTER TABLE services ADD COLUMN last_order INTEGER;")
+        db.commit()
+        print("✅ 'last_order' ustuni qo‘shildi.")
+    else:
+        print("ℹ️ 'last_order' ustuni allaqachon mavjud.")
+    db.close()
+
+
+# ⏳ Dastur ishga tushganda chaqiriladi
+ensure_last_order_column_exists()
