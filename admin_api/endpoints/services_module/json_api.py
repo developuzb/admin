@@ -102,19 +102,19 @@ def log_metric(metric: MetricLog):
     return {"status": "ok"}
 
 
-@router.post("/api/users/track")
-def track_user(user: UserTrack, db: sqlite3.Connection = Depends(get_db)):
+class TrackUserSchema(BaseModel):
+    user_id: int
+    name: str
+    phone: str
+
+
+@router.post("/api/services/users/track")
+def track_user(data: TrackUserSchema, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user.id,))
-    existing = cursor.fetchone()
-    if existing:
-        cursor.execute("UPDATE users SET name = ?, phone = ? WHERE id = ?",
-                       (user.name, user.phone, user.id))
-    else:
-        cursor.execute("INSERT INTO users (id, name, phone) VALUES (?, ?, ?)",
-                       (user.id, user.name, user.phone))
+    cursor.execute("INSERT OR IGNORE INTO users (id, name, phone) VALUES (?, ?, ?)",
+                   (data.user_id, data.name, data.phone))
     db.commit()
-    return {"status": "ok"}
+    return {"status": "tracked"}
 
 
 @router.get("/ api/users/{user_id}")
