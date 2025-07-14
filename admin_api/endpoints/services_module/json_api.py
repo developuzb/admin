@@ -46,6 +46,32 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     return services
 
 
+@router.put("/api/orders/{order_id}")
+def update_order(order_id: int, data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("""
+        UPDATE orders SET
+        service_id = ?, service_name = ?, user_id = ?, phone = ?, contact_method = ?, contact_time = ?, name = ?
+        WHERE id = ?
+    """, (data.service_id, data.service_name, data.user_id, data.phone, data.contact_method, data.contact_time, data.name, order_id))
+    db.commit()
+    return {"status": "order_updated"}
+
+
+@router.get("/api/services/users/{user_id}")
+def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "user_id": user[0],
+        "name": user[1],
+        "phone": user[2]
+    }
+
+
 @router.get("/api/services/{service_id}")
 def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
