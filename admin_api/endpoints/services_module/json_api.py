@@ -169,12 +169,19 @@ def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection =
         cursor.execute(
             "SELECT * FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id))
         order = cursor.fetchone()
+
         if not order:
+            # bu 404 ni alohida qaytaramiz
             raise HTTPException(status_code=404, detail="Order not found")
+
         return dict(order)
+
+    except HTTPException as he:
+        raise he  # 👈 bu joyda 404 ni 500 ga o‘zgartirmay, shunchaki uzatamiz
+
     except Exception as e:
-        print("Xatolik:", e)
-        traceback.print_exc()  # <<< bu yerda asosiy xatolik chiqadi
+        print("XATOLIK:", e)
+        traceback.print_exc()
         raise HTTPException(
             status_code=500, detail="Buyurtmani olishda xatolik yuz berdi.")
 
