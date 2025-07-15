@@ -80,17 +80,20 @@ def update_order(order_id: int, data: OrderUpdateSchema, db: sqlite3.Connection 
     return {"status": "order_updated"}
 
 
-@router.get("/api/services/users/{user_id}")
 def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (user_id,))
     user = cursor.fetchone()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return JSONResponse(content={
-        "user_id": user[0],
-        "name": user[1],
-        "phone": user[2]
+        "user_id": user[1],  # telegram_id
+        "name": user[2],
+        "phone": user[3],
+        "cashback": user[5],
+        "segment": user[6],
+        "balance": user[9],
+        "actions": user[10],
     })
 
 
