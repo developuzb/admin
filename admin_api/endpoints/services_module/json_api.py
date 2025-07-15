@@ -80,6 +80,27 @@ def update_order(order_id: int, data: OrderUpdateSchema, db: sqlite3.Connection 
     return {"status": "order_updated"}
 
 
+@router.get("/api/orders/{order_id}")
+def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT * FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id))
+    order = cursor.fetchone()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return {
+        "id": order[0],
+        "service_id": order[1],
+        "service_name": order[2],
+        "user_id": order[3],
+        "phone": order[4],
+        "contact_method": order[5],
+        "contact_time": order[6],
+        "name": order[7]
+    }
+
+
 def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (user_id,))
