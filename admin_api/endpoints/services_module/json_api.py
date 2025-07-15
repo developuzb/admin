@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
 import logging
+import traceback
+
 logger = logging.getLogger(__name__)
 
 
@@ -171,7 +173,8 @@ def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection =
             raise HTTPException(status_code=404, detail="Order not found")
         return dict(order)
     except Exception as e:
-        logger.exception(f"Xatolik /api/orders/{order_id}: {e}")
+        print("Xatolik:", e)
+        traceback.print_exc()  # <<< bu yerda asosiy xatolik chiqadi
         raise HTTPException(
             status_code=500, detail="Buyurtmani olishda xatolik yuz berdi.")
 
