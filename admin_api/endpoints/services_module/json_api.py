@@ -3,6 +3,7 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
+app = FastAPI()
 
 
 class OrderCreateSchema(BaseModel):
@@ -16,7 +17,16 @@ class OrderCreateSchema(BaseModel):
     name: str
 
 
-app = FastAPI()
+class OrderUpdateSchema(BaseModel):
+    service_id: int
+    service_name: str
+    user_id: int
+    phone: str
+    contact_method: str
+    contact_time: str
+    name: str
+
+
 router = APIRouter()
 
 
