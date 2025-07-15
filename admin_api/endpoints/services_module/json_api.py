@@ -72,6 +72,16 @@ def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     }
 
 
+class OrderCreateSchema(BaseModel):
+    service_id: int
+    service_name: str
+    user_id: int
+    phone: str
+    contact_method: str
+    contact_time: str
+    name: str
+
+
 @router.get("/api/services/{service_id}")
 def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
