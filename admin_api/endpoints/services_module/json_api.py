@@ -2,6 +2,9 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, Query
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
+import logging
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI()
 router = APIRouter()
@@ -168,7 +171,9 @@ def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection =
             raise HTTPException(status_code=404, detail="Order not found")
         return dict(order)
     except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        logger.exception(f"Xatolik /api/orders/{order_id}: {e}")
+        raise HTTPException(
+            status_code=500, detail="Buyurtmani olishda xatolik yuz berdi.")
 
 
 @router.put("/api/services/{service_id}")
