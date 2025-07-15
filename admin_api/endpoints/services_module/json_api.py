@@ -46,8 +46,19 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     return services
 
 
+class OrderCreateSchema(BaseModel):
+    order_id: int
+    service_id: int
+    service_name: str
+    user_id: int
+    phone: str
+    contact_method: str
+    contact_time: str
+    name: str
+
+
 @router.put("/api/orders/{order_id}")
-def update_order(order_id: int, data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_db)):
+def update_order(order_id: int, data: OrderUpdateSchema, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("""
         UPDATE orders SET
@@ -70,16 +81,6 @@ def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
         "name": user[1],
         "phone": user[2]
     }
-
-
-class OrderCreateSchema(BaseModel):
-    service_id: int
-    service_name: str
-    user_id: int
-    phone: str
-    contact_method: str
-    contact_time: str
-    name: str
 
 
 @router.get("/api/services/{service_id}")
@@ -151,17 +152,6 @@ def track_user(data: TrackUserSchema, db: sqlite3.Connection = Depends(get_db)):
                    (data.user_id, data.name, data.phone))
     db.commit()
     return {"status": "tracked"}
-
-
-class OrderCreateSchema(BaseModel):
-    order_id: int
-    service_id: int
-    service_name: str
-    user_id: int
-    phone: str
-    contact_method: str
-    contact_time: str
-    name: str
 
 
 @router.post("/api/orders/")
