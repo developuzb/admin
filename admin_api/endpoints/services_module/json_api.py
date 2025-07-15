@@ -87,11 +87,11 @@ def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
     user = cursor.fetchone()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return {
+    return JSONResponse(content={
         "user_id": user[0],
         "name": user[1],
         "phone": user[2]
-    }
+    })
 
 
 @router.get("/api/services/{service_id}")
