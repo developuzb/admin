@@ -1,9 +1,16 @@
-
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, Query
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
+
 app = FastAPI()
+router = APIRouter()
+
+
+def get_db():
+    db = sqlite3.connect("bot.db")
+    db.row_factory = sqlite3.Row
+    return db
 
 
 class OrderCreateSchema(BaseModel):
@@ -25,15 +32,6 @@ class OrderUpdateSchema(BaseModel):
     contact_method: str
     contact_time: str
     name: str
-
-
-router = APIRouter()
-
-
-def get_db():
-    db = sqlite3.connect("bot.db")
-    db.row_factory = sqlite3.Row
-    return db
 
 
 class ServiceStatUpdate(BaseModel):
@@ -59,119 +57,10 @@ class WebhookReport(BaseModel):
     service_id: int
 
 
-@router.get("/api/services/")
-def get_services(db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM services")
-    rows = cursor.fetchall()
-    services = [dict(row) for row in rows]
-    return services
-
-
-@router.put("/api/orders/{order_id}")
-def update_order(order_id: int, data: OrderUpdateSchema, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("""
-        UPDATE orders SET
-        service_id = ?, service_name = ?, user_id = ?, phone = ?, contact_method = ?, contact_time = ?, name = ?
-        WHERE id = ?
-    """, (data.service_id, data.service_name, data.user_id, data.phone, data.contact_method, data.contact_time, data.name, order_id))
-    db.commit()
-    return {"status": "order_updated"}
-
-
-@router.get("/api/orders/{order_id}")
-def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT * FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id))
-    order = cursor.fetchone()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-
-    return {
-        "id": order[0],
-        "service_id": order[1],
-        "service_name": order[2],
-        "user_id": order[3],
-        "phone": order[4],
-        "contact_method": order[5],
-        "contact_time": order[6],
-        "name": order[7]
-    }
-
-
-def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (user_id,))
-    user = cursor.fetchone()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return JSONResponse(content={
-        "user_id": user[1],  # telegram_id
-        "name": user[2],
-        "phone": user[3],
-        "cashback": user[5],
-        "segment": user[6],
-        "balance": user[9],
-        "actions": user[10],
-    })
-
-
-@router.get("/api/services/{service_id}")
-def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-
-    # Xizmat ma’lumotlari
-    cursor.execute("SELECT * FROM services WHERE id = ?", (service_id,))
-    service = cursor.fetchone()
-    if not service:
-        raise HTTPException(status_code=404, detail="Xizmat topilmadi")
-
-    service_data = dict(service)
-
-    # So‘nggi buyurtma (agar mavjud bo‘lsa)
-    cursor.execute(
-        "SELECT id, user_id, contact, created_at FROM orders WHERE service_id = ? ORDER BY id DESC LIMIT 1",
-        (service_id,)
-    )
-    last_order = cursor.fetchone()
-    service_data["last_order"] = dict(last_order) if last_order else None
-
-    return service_data
-
-
-@router.patch("/api/services/{service_id}/stats")
-def update_service_stats(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT price, cashback, original_price FROM services WHERE id = ?", (service_id,))
-    row = cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Xizmat topilmadi")
-    price, cashback, original_price = row
-    foyda = (original_price or 0 - price or 0) + data.cashback_given
-    cursor.execute("""
-        UPDATE services
-        SET orders = COALESCE(orders, 0) + 1,
-            profit = COALESCE(profit, 0) + ?
-        WHERE id = ?
-    """, (foyda, service_id))
-    db.commit()
-    return {"status": "success", "foyda": foyda}
-
-
 class MetricLog(BaseModel):
     event: str
     date: str
     group: str | None = None
-
-
-@router.post("/api/metrics/")
-def log_metric(metric: MetricLog):
-    # Bu yerda faqat xotirada saqlaymiz yoki logga yozamiz
-    print(f"📊 METRIKA: {metric.event} ({metric.date})", "group:", metric.group)
-    return {"status": "ok"}
 
 
 class TrackUserSchema(BaseModel):
@@ -180,136 +69,8 @@ class TrackUserSchema(BaseModel):
     phone: str
 
 
-@router.post("/api/services/users/track")
-def track_user(data: TrackUserSchema, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (id, name, phone) VALUES (?, ?, ?)",
-                   (data.user_id, data.name, data.phone))
-    db.commit()
-    return {"status": "tracked"}
-
-
-@router.post("/api/orders/")
-def create_order(data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("""
-        INSERT INTO orders (id, service_id, service_name, user_id, phone, contact_method, contact_time, name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (data.order_id, data.service_id, data.service_name, data.user_id, data.phone, data.contact_method, data.contact_time, data.name))
-    db.commit()
-    return {"status": "order_created"}
-
-
-@router.get("/ api/users/{user_id}")
-def get_user_profile(user_id: int, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT name, phone, balance, actions_count FROM users WHERE id = ?", (user_id,))
-    row = cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
-    badge = "🥉 Bronze"
-    count = row["actions_count"] or 0
-    if count >= 10:
-        badge = "🥇 Gold"
-    elif count >= 5:
-        badge = "🥈 Silver"
-    return {
-        "ism": row["name"],
-        "telefon": row["phone"],
-        "balans": row["balance"],
-        "amallar_soni": count,
-        "badge": badge
-    }
-
-
-@router.post("/api/cashback-log/")
-def add_cashback_log(log: CashbackLog, db: sqlite3.Connection = Depends(get_db)):
-    if log.direction not in ("plus", "minus"):
-        raise HTTPException(
-            status_code=400, detail="direction faqat 'plus' yoki 'minus' bo'lishi mumkin")
-    cursor = db.cursor()
-    cursor.execute("""
-        INSERT INTO cashback_log (user_id, service_id, amount, direction)
-        VALUES (?, ?, ?, ?)
-    """, (log.user_id, log.service_id, log.amount, log.direction))
-    cursor.execute(
-        "SELECT balance, actions_count FROM users WHERE id = ?", (log.user_id,))
-    user = cursor.fetchone()
-    if not user:
-        raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
-    balance = user["balance"] or 0
-    actions = user["actions_count"] or 0
-    if log.direction == "plus":
-        balance += log.amount
-        actions += 1
-    else:
-        if log.amount > balance:
-            raise HTTPException(status_code=400, detail="Balans yetarli emas")
-        balance -= log.amount
-    cursor.execute("UPDATE users SET balance = ?, actions_count = ? WHERE id = ?",
-                   (balance, actions, log.user_id))
-    db.commit()
-    return {"status": "success", "balance": balance}
-
-
-@router.delete("/api/cashback-log/{log_id}")
-def delete_cashback_log(log_id: int, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM cashback_log WHERE id = ?", (log_id,))
-    db.commit()
-    return {"status": "deleted"}
-
-
-@router.post("/api/webhook/send-report")
-def send_report(report: WebhookReport):
-    return {"status": "report received", "type": report.type}
-
-
-app.include_router(router)
-
-
 class ServicePartialUpdate(BaseModel):
     last_order: int | None = None
-
-
-@router.patch("/api/services/{service_id}")
-def update_service_partial(service_id: int, data: ServicePartialUpdate, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    fields = []
-    values = []
-
-    if data.last_order is not None:
-        fields.append("last_order = ?")
-        values.append(data.last_order)
-
-    if not fields:
-        raise HTTPException(
-            status_code=400, detail="Hech narsa o‘zgartirilmadi")
-
-    values.append(service_id)
-    sql = f"UPDATE services SET {', '.join(fields)} WHERE id = ?"
-    cursor.execute(sql, values)
-    db.commit()
-    return {"status": "updated"}
-
-
-def ensure_last_order_column_exists():
-    db = sqlite3.connect("bot.db")
-    cursor = db.cursor()
-    cursor.execute("PRAGMA table_info(services);")
-    columns = [row[1] for row in cursor.fetchall()]
-    if "last_order" not in columns:
-        cursor.execute("ALTER TABLE services ADD COLUMN last_order INTEGER;")
-        db.commit()
-        print("✅ 'last_order' ustuni qo‘shildi.")
-    else:
-        print("ℹ️ 'last_order' ustuni allaqachon mavjud.")
-    db.close()
-
-
-# ⏳ Dastur ishga tushganda chaqiriladi
-ensure_last_order_column_exists()
 
 
 class UserUpdate(BaseModel):
@@ -319,32 +80,198 @@ class UserUpdate(BaseModel):
     actions_count: int | None = None
 
 
-@router.put("/api/users/{user_id}")
-def update_user(user_id: int, update: UserUpdate, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
+@router.get("/api/services/")
+def get_services(db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM services")
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
-    fields = []
-    values = []
 
-    if update.name is not None:
-        fields.append("name = ?")
-        values.append(update.name)
-    if update.phone is not None:
-        fields.append("phone = ?")
-        values.append(update.phone)
-    if update.balance is not None:
-        fields.append("balance = ?")
-        values.append(update.balance)
-    if update.actions_count is not None:
-        fields.append("actions_count = ?")
-        values.append(update.actions_count)
+@router.get("/api/services/{service_id}")
+def get_service_by_id(service_id: int, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM services WHERE id = ?", (service_id,))
+        service = cursor.fetchone()
+        if not service:
+            raise HTTPException(status_code=404, detail="Xizmat topilmadi")
 
-    if not fields:
-        raise HTTPException(
-            status_code=400, detail="Yangilanish uchun ma'lumot yo‘q")
+        service_data = dict(service)
 
-    values.append(user_id)
-    sql = f"UPDATE users SET {', '.join(fields)} WHERE id = ?"
-    cursor.execute(sql, values)
-    db.commit()
-    return {"status": "updated"}
+        cursor.execute(
+            "SELECT id, user_id, contact, created_at FROM orders WHERE service_id = ? ORDER BY id DESC LIMIT 1",
+            (service_id,)
+        )
+        last_order = cursor.fetchone()
+        service_data["last_order"] = dict(last_order) if last_order else None
+
+        return service_data
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/api/services/users/track")
+def track_user(data: TrackUserSchema, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("INSERT OR IGNORE INTO users (id, name, phone) VALUES (?, ?, ?)",
+                       (data.user_id, data.name, data.phone))
+        db.commit()
+        return {"status": "tracked"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/api/orders/")
+def create_order(data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO orders (id, service_id, service_name, user_id, phone, contact_method, contact_time, name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (data.order_id, data.service_id, data.service_name, data.user_id, data.phone,
+              data.contact_method, data.contact_time, data.name))
+        db.commit()
+        return {"status": "order_created"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.put("/api/orders/{order_id}")
+def update_order(order_id: int, data: OrderUpdateSchema, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            UPDATE orders SET
+            service_id = ?, service_name = ?, user_id = ?, phone = ?, contact_method = ?, contact_time = ?, name = ?
+            WHERE id = ?
+        """, (data.service_id, data.service_name, data.user_id, data.phone, data.contact_method,
+              data.contact_time, data.name, order_id))
+        db.commit()
+        return {"status": "order_updated"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/api/orders/{order_id}")
+def get_order(order_id: int, user_id: int = Query(...), db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT * FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id))
+        order = cursor.fetchone()
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return dict(order)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.put("/api/services/{service_id}")
+def partial_update_service(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("UPDATE services SET cashback_given = cashback_given + ? WHERE id = ?",
+                       (data.cashback_given, service_id))
+        db.commit()
+        return {"status": "updated"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.put("/api/services/update_last/{service_id}")
+def update_last_order(service_id: int, data: ServicePartialUpdate, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        if data.last_order is not None:
+            cursor = db.cursor()
+            cursor.execute(
+                "UPDATE services SET last_order = ? WHERE id = ?", (data.last_order, service_id))
+            db.commit()
+        return {"status": "last_order_updated"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/api/services/users/{user_id}")
+def get_user(user_id: int, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {
+            "user_id": user[1],
+            "name": user[2],
+            "phone": user[3],
+            "cashback": user[5],
+            "segment": user[6],
+            "balance": user[9],
+            "actions": user[10],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/api/services/cashback")
+def log_cashback(data: CashbackLog, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO cashback_log (user_id, service_id, amount, direction, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (data.user_id, data.service_id, data.amount, data.direction, datetime.utcnow().isoformat()))
+        db.commit()
+        return {"status": "cashback_logged"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.put("/api/services/users/{user_id}")
+def update_user(user_id: int, data: UserUpdate, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        fields = []
+        values = []
+        for key, value in data.dict(exclude_unset=True).items():
+            fields.append(f"{key} = ?")
+            values.append(value)
+        values.append(user_id)
+        cursor = db.cursor()
+        cursor.execute(
+            f"UPDATE users SET {', '.join(fields)} WHERE telegram_id = ?", values)
+        db.commit()
+        return {"status": "user_updated"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/api/metrics")
+def log_metric(data: MetricLog, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO metrics (event, date, segment)
+            VALUES (?, ?, ?)
+        """, (data.event, data.date, data.group))
+        db.commit()
+        return {"status": "metric_logged"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/api/webhook")
+def webhook_report(data: WebhookReport, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO webhook_log (type, user_id, service_id, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (data.type, data.user_id, data.service_id, datetime.utcnow().isoformat()))
+        db.commit()
+        return {"status": "webhook_logged"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
