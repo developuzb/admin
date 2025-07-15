@@ -4,6 +4,18 @@ from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
 
+
+class OrderCreateSchema(BaseModel):
+    order_id: int
+    service_id: int
+    service_name: str
+    user_id: int
+    phone: str
+    contact_method: str
+    contact_time: str
+    name: str
+
+
 app = FastAPI()
 router = APIRouter()
 
@@ -44,17 +56,6 @@ def get_services(db: sqlite3.Connection = Depends(get_db)):
     rows = cursor.fetchall()
     services = [dict(row) for row in rows]
     return services
-
-
-class OrderCreateSchema(BaseModel):
-    order_id: int
-    service_id: int
-    service_name: str
-    user_id: int
-    phone: str
-    contact_method: str
-    contact_time: str
-    name: str
 
 
 @router.put("/api/orders/{order_id}")
