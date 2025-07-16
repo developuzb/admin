@@ -198,6 +198,18 @@ def partial_update_service(service_id: int, data: ServiceStatUpdate, db: sqlite3
         raise HTTPException(status_code=503, detail=str(e))
 
 
+@router.patch("/api/services/{service_id}")
+def patch_service(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "UPDATE services SET cashback_given = cashback_given + ? WHERE id = ?", (data.cashback_given, service_id))
+        db.commit()
+        return {"status": "updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.put("/api/services/update_last/{service_id}")
 def update_last_order(service_id: int, data: ServicePartialUpdate, db: sqlite3.Connection = Depends(get_db)):
     try:
