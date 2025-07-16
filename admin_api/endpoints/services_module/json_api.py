@@ -221,8 +221,7 @@ def update_last_order(service_id: int, data: dict, db: sqlite3.Connection = Depe
         raise HTTPException(status_code=400, detail="last_order is required")
 
     cursor = db.cursor()
-    cursor.execute(
-        "UPDATE services SET last_order = ? WHERE id = ?", (last_order, service_id))
+    cursor.execute("UPDATE services SET last_order = ? WHERE id = ?", (last_order, service_id))
     db.commit()
     return {"status": "updated"}
 
