@@ -215,16 +215,16 @@ def patch_service(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connecti
 
 
 @router.put("/api/services/update_last/{service_id}")
-def update_last_order(service_id: int, data: ServicePartialUpdate, db: sqlite3.Connection = Depends(get_db)):
-    try:
-        if data.last_order is not None:
-            cursor = db.cursor()
-            cursor.execute(
-                "UPDATE services SET last_order = ? WHERE id = ?", (data.last_order, service_id))
-            db.commit()
-        return {"status": "last_order_updated"}
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e))
+def update_last_order(service_id: int, data: dict, db: sqlite3.Connection = Depends(get_db)):
+    last_order = data.get("last_order")
+    if last_order is None:
+        raise HTTPException(status_code=400, detail="last_order is required")
+
+    cursor = db.cursor()
+    cursor.execute(
+        "UPDATE services SET last_order = ? WHERE id = ?", (last_order, service_id))
+    db.commit()
+    return {"status": "updated"}
 
 
 @router.get("/api/services/users/{user_id}")
