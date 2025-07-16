@@ -202,12 +202,16 @@ def partial_update_service(service_id: int, data: ServiceStatUpdate, db: sqlite3
 def patch_service(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connection = Depends(get_db)):
     try:
         cursor = db.cursor()
-        cursor.execute(
-            "UPDATE services SET cashback_given = cashback_given + ? WHERE id = ?", (data.cashback_given, service_id))
+        cursor.execute("UPDATE services SET cashback_given = cashback_given + ? WHERE id = ?",
+                       (data.cashback_given, service_id))
         db.commit()
         return {"status": "updated"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        print("PATCH xatolik:", e)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500, detail="PATCH orqali yangilashda xatolik.")
 
 
 @router.put("/api/services/update_last/{service_id}")
