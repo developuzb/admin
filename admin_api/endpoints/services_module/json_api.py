@@ -136,10 +136,13 @@ def create_order(data: OrderCreateSchema, db: sqlite3.Connection = Depends(get_d
     try:
         cursor = db.cursor()
         cursor.execute("""
-            INSERT INTO orders (id, service_id, service_name, user_id, phone, contact_method, contact_time, name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (data.order_id, data.service_id, data.service_name, data.user_id, data.phone,
-              data.contact_method, data.contact_time, data.name))
+            INSERT INTO orders (
+                id, service_id, service_name, user_id,
+                phone, contact_method, contact_time, name, timestamp
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """, (data.order_id, data.service_id, data.service_name, data.user_id,
+              data.phone, data.contact_method, data.contact_time, data.name))
         db.commit()
         return {"status": "order_created"}
     except Exception as e:
