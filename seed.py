@@ -1,26 +1,23 @@
 import sqlite3
 
-# Fayl manzilini aniqlang
-# yoki to‘liq manzil yozing: "C:/Users/suxrob/Desktop/SQlite2/SQlite2/SQlite2/bot.db"
-db_path = "bot.db"
-
-# Ulash
-conn = sqlite3.connect(db_path)
+# Bazaga ulanamiz
+conn = sqlite3.connect("bot.db")
 cursor = conn.cursor()
 
-# Ustun bor-yo‘qligini tekshirish
-cursor.execute("PRAGMA table_info(services);")
-columns = [col[1] for col in cursor.fetchall()]
-print("Joriy ustunlar:", columns)
-
-if "cashback_given" not in columns:
-    print("➡️  'cashback_given' ustuni qo‘shilmoqda...")
+# Ustunni qo‘shamiz
+try:
     cursor.execute(
-        "ALTER TABLE services ADD COLUMN cashback_given INTEGER DEFAULT 0;")
+        "ALTER TABLE orders ADD COLUMN timestamp TEXT DEFAULT (datetime('now'))")
     conn.commit()
-    print("✅ Ustun qo‘shildi.")
-else:
-    print("ℹ️  'cashback_given' ustuni allaqachon mavjud.")
+    print("✅ 'timestamp' ustuni qo‘shildi.")
+except sqlite3.OperationalError as e:
+    print(f"⚠️ Xatolik: {e}")
 
-# Yopish
+# Ustunlar ro‘yxatini tekshiramiz
+cursor.execute("PRAGMA table_info(orders)")
+columns = cursor.fetchall()
+for col in columns:
+    print(col)
+
+# Ulani yopamiz
 conn.close()
