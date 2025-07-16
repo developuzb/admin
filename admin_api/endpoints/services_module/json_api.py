@@ -214,7 +214,7 @@ def patch_service(service_id: int, data: ServiceStatUpdate, db: sqlite3.Connecti
             status_code=500, detail="PATCH orqali yangilashda xatolik.")
 
 
-@router.put("/api/services/update_last/{service_id}")
+# @router.put("/api/services/update_last/{service_id}")
 def update_last_order(service_id: int, data: dict, db: sqlite3.Connection = Depends(get_db)):
     last_order = data.get("last_order")
     if last_order is None:
