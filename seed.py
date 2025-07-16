@@ -1,48 +1,26 @@
 import sqlite3
-from datetime import datetime
 
+# Fayl manzilini aniqlang
+# yoki to‘liq manzil yozing: "C:/Users/suxrob/Desktop/SQlite2/SQlite2/SQlite2/bot.db"
+db_path = "bot.db"
 
-def init_db(db_path="bot.db"):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            telegram_id INTEGER UNIQUE,
-            name TEXT,
-            phone TEXT,
-            joined_at TEXT,
-            cashback_balance INTEGER DEFAULT 0,
-            user_segment TEXT,
-            first_seen TEXT,
-            loyal_customer INTEGER DEFAULT 0,
-            balance INTEGER DEFAULT 0,
-            actions_count INTEGER DEFAULT 0
-        )
-    """)
+# Ulash
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+# Ustun bor-yo‘qligini tekshirish
+cursor.execute("PRAGMA table_info(services);")
+columns = [col[1] for col in cursor.fetchall()]
+print("Joriy ustunlar:", columns)
+
+if "cashback_given" not in columns:
+    print("➡️  'cashback_given' ustuni qo‘shilmoqda...")
+    cursor.execute(
+        "ALTER TABLE services ADD COLUMN cashback_given INTEGER DEFAULT 0;")
     conn.commit()
-    conn.close()
-    print("✅ Jadval yaratildi (yoki mavjud edi).")
+    print("✅ Ustun qo‘shildi.")
+else:
+    print("ℹ️  'cashback_given' ustuni allaqachon mavjud.")
 
-
-def insert_dummy_user(db_path="bot.db"):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO users (
-            telegram_id, name, phone, joined_at, cashback_balance,
-            user_segment, first_seen, loyal_customer, balance, actions_count
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        553740532, "Test Foydalanuvchi", "+998901112233",
-        datetime.now().isoformat(), 0,
-        "A", datetime.now().isoformat(), 0, 0, 0
-    ))
-    conn.commit()
-    conn.close()
-    print("✅ Test foydalanuvchi qo‘shildi.")
-
-
-# 👉 FUNKSIYALAR YUQORIDA, ENDI Ularni chaqiramiz
-init_db()
-insert_dummy_user()
+# Yopish
+conn.close()
